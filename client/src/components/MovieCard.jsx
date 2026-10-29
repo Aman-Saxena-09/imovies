@@ -1,0 +1,6 @@
+import { Link } from 'react-router-dom';
+import { ArrowUpRight, Clock3, Star } from 'lucide-react';
+import Poster from './Poster';
+export default function MovieCard({ movie }) {
+  return <article className="movie-card"><Link to={`/movies/${movie._id}`} className="movie-card-poster"><Poster src={movie.posterUrl} title={movie.title}/><span className={`movie-status ${movie.status === 'COMING_SOON' ? 'coming' : ''}`}>{movie.status === 'COMING_SOON' ? 'COMING SOON' : 'NOW SHOWING'}</span><span className="poster-arrow"><ArrowUpRight size={19}/></span></Link><div className="movie-card-body"><div className="movie-meta"><span>{movie.genre?.slice(0, 2).join(' · ') || 'Cinema'}</span>{movie.rating > 0 && <span className="rating"><Star size={13} fill="currentColor"/>{movie.rating.toFixed(1)}</span>}</div><Link to={`/movies/${movie._id}`} className="movie-title">{movie.title}</Link><div className="movie-submeta"><span><Clock3 size={14}/>{movie.durationMinutes} min</span><span>{movie.language?.[0] || 'English'}</span></div><Link className="movie-card-link" to={`/movies/${movie._id}`}>{movie.status === 'COMING_SOON' ? 'View details' : 'Book tickets'} <ArrowUpRight size={15}/></Link></div></article>;
+}

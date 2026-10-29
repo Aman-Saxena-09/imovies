@@ -1,0 +1,18 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, SlidersHorizontal, X, Film } from 'lucide-react';
+import { api, getData } from '../services/api';
+import MovieCard from '../components/MovieCard';
+import Spinner from '../components/Spinner';
+export default function Movies() {
+  const [params, setParams] = useSearchParams(); const [movies, setMovies] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
+  const [query, setQuery] = useState(params.get('q') || ''); const [genre, setGenre] = useState(''); const [language, setLanguage] = useState(''); const status = params.get('status') || '';
+  useEffect(() => { setLoading(true); setError(''); api.get('/movies', { params: { limit: 60, q: query || undefined, genre: genre || undefined, language: language || undefined, status: status || undefined } }).then(r => setMovies(getData(r).items)).catch(e => setError(e.userMessage || 'Could not load movies.')).finally(() => setLoading(false)); }, [query, genre, language, status]);
+  const genres = useMemo(() => [...new Set(movies.flatMap(m => m.genre || []))].sort(), [movies]); const languages = useMemo(() => [...new Set(movies.flatMap(m => m.language || []))].sort(), [movies]);
+  const clear = () => { setQuery(''); setGenre(''); setLanguage(''); setParams({}); };
+  return <main className="page-shell container-wide"><div className="page-kicker"><span className="eyebrow"><span className="eyebrow-dot"/> THE IMOVIES COLLECTION</span><span>{movies.length} FILM{movies.length === 1 ? '' : 'S'} FOUND</span></div><div className="page-title-row"><div><h1>Find your <em>next favourite.</em></h1><p>Explore the films everyone's talking about — or discover something unexpected.</p></div></div>
+    <div className="filter-panel"><div className="search-field"><Search size={18}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search titles, stories..." aria-label="Search movies"/><kbd>SEARCH</kbd></div><div className="filter-controls"><label><SlidersHorizontal size={15}/><select value={genre} onChange={e => setGenre(e.target.value)} aria-label="Filter by genre"><option value="">All genres</option>{genres.map(g => <option key={g}>{g}</option>)}</select></label><label><select value={language} onChange={e => setLanguage(e.target.value)} aria-label="Filter by language"><option value="">All languages</option>{languages.map(l => <option key={l}>{l}</option>)}</select></label>{(genre || language || query || status) && <button className="clear-filters" onClick={clear}><X size={14}/> Clear</button>}</div></div>
+    <div className="collection-tabs"><button className={!status ? 'active' : ''} onClick={() => setParams({})}>All films</button><button className={status === 'NOW_SHOWING' ? 'active' : ''} onClick={() => setParams({ status: 'NOW_SHOWING' })}>Now showing</button><button className={status === 'COMING_SOON' ? 'active' : ''} onClick={() => setParams({ status: 'COMING_SOON' })}>Coming soon</button></div>
+    {loading ? <Spinner label="Loading the collection..."/> : error ? <div className="notice-error">{error}<button className="btn btn-outline-light btn-sm" onClick={() => window.location.reload()}>Retry</button></div> : movies.length ? <div className="movie-grid collection-grid">{movies.map(movie => <MovieCard key={movie._id} movie={movie}/>)}</div> : <div className="empty-state"><Film size={34}/><h3>No films match those filters</h3><p>Try another title or clear the filters.</p><button className="btn btn-accent" onClick={clear}>Clear filters</button></div>}
+  </main>;
+}

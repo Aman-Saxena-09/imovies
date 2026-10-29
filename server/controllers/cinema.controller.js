@@ -1,0 +1,11 @@
+import { z } from 'zod';
+import Cinema from '../models/Cinema.js';
+import Showtime from '../models/Showtime.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { AppError } from '../utils/errors.js';
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const cinemaSchema = z.object({ name: z.string().trim().min(2).max(120), location: z.string().trim().min(2).max(200), city: z.string().trim().min(2).max(100), facilities: z.array(z.string()).default([]), screens: z.array(z.string()).default(['Screen 1']), isActive: z.boolean().default(true) });
+export const listCinemas = asyncHandler(async (req, res) => { const filter = { isActive: true }; if (req.query.city) filter.city = new RegExp(escapeRegex(String(req.query.city).slice(0, 60)), 'i'); const cinemas = await Cinema.find(filter).sort({ city: 1, name: 1 }); res.json({ success: true, data: { items: cinemas } }); });
+export const createCinema = asyncHandler(async (req, res) => { const p = cinemaSchema.safeParse(req.body); if (!p.success) throw new AppError(p.error.issues.map(i => i.message).join(' ')); const cinema = await Cinema.create(p.data); res.status(201).json({ success: true, data: { cinema } }); });
+export const updateCinema = asyncHandler(async (req, res) => { const p = cinemaSchema.partial().safeParse(req.body); if (!p.success) throw new AppError(p.error.issues.map(i => i.message).join(' ')); const cinema = await Cinema.findByIdAndUpdate(req.params.id, p.data, { new: true, runValidators: true }); if (!cinema) throw new AppError('Cinema not found.', 404); res.json({ success: true, data: { cinema } }); });
+export const deleteCinema = asyncHandler(async (req, res) => { const cinema = await Cinema.findById(req.params.id); if (!cinema) throw new AppError('Cinema not found.', 404); const future = await Showtime.exists({ cinema: cinema._id, startTime: { $gt: new Date() }, isActive: true }); if (future) throw new AppError('Cinema has upcoming showtimes. Deactivate or remove them first.', 409); cinema.isActive = false; await cinema.save(); res.json({ success: true, data: { message: 'Cinema deactivated.' } }); });
