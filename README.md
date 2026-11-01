@@ -1,196 +1,280 @@
-# IMovies — Movie Ticket Booking Made Simple
+# 🎬 iMovies — Movie Ticket Booking Application
 
-IMovies is a full-stack movie ticket booking application built with React, Vite, Node.js, Express, MongoDB, Mongoose, JWT cookies, and Socket.IO. It demonstrates movie discovery, showtime selection, live seat availability, a simulated checkout, booking history, cancellation rules, and administrator management tools.
+**Discover movies. Choose your showtime. Book your seats.**
 
-> **Demo checkout only:** the application does not process real payments or charge money. Movie poster URLs are optional external assets; a fallback is shown when a poster cannot load.
+iMovies is a full-stack movie ticket booking web application built using React, Vite, Node.js, Express, MongoDB, and Socket.IO. It provides a cinematic movie discovery experience with user authentication, cinema showtimes, interactive seat selection, booking management, and administrator tools.
 
-## Highlights
+The application integrates with **The Movie Database (TMDB) API** to import movie information and uses MongoDB to manage movies, cinemas, showtimes, seats, and bookings.
 
-- Cinematic, responsive React interface with search, genre/language filters, movie details, and showtimes.
-- Registration/login with bcrypt password hashing, JWT in an HTTP-only cookie, protected routes, and `USER` / `ADMIN` roles.
-- MongoDB models for users, movies, cinemas, showtimes/seat inventories, and bookings.
-- Atomic, conditional MongoDB update to claim all selected seats in a single showtime document; concurrent requests cannot both claim the same available seat.
-- Socket.IO broadcasts showtime seat-state changes to connected clients.
-- Simulated checkout with a booking reference, booking history, a downloadable plain-text ticket summary, and cancellation window (at least two hours before showtime).
-- Admin dashboard and movie/cinema/showtime/booking management.
-- Structured errors, validation, rate limits for login/register, Helmet, CORS allowlist, `.env.example` files, and documentation.
+> **Note:** Checkout is simulated for demonstration purposes. No real payments are processed or money charged.
 
-## Tech stack
+## ✨ Features
 
-| Area | Technologies |
-|---|---|
-| Frontend | React, Vite, React Router, Axios, Bootstrap 5, Lucide React |
-| Backend | Node.js, Express, Mongoose, Zod, bcryptjs, JWT, Socket.IO |
-| Database | MongoDB local or MongoDB Atlas |
-| Testing | Vitest, Supertest |
+- **Movie Discovery:** Browse movies with search, genre filters, language filters, ratings, and movie details.
+- **TMDB Integration:** Import movie information from TMDB.
+- **Authentication:** User registration and login using bcrypt password hashing and JWT authentication stored in HTTP-only cookies.
+- **Role-Based Access:** Separate `USER` and `ADMIN` permissions.
+- **Cinema & Showtimes:** Browse cinemas and available showtimes.
+- **Interactive Seat Selection:** View seat availability and select seats for booking.
+- **Real-Time Updates:** Socket.IO broadcasts seat-state changes to connected clients.
+- **Booking Management:** Create bookings, view booking history, and cancel eligible bookings.
+- **Simulated Checkout:** Complete a demo booking and receive a booking reference.
+- **Admin Dashboard:** Manage movies, cinemas, showtimes, and bookings.
+- **Security:** Request validation, rate limiting, Helmet, CORS configuration, and structured error handling.
 
-## Architecture
+## 🛠️ Tech Stack
+
+| Area                    | Technologies                                                |
+| ----------------------- | ----------------------------------------------------------- |
+| Frontend                | React, Vite, React Router, Axios, Bootstrap 5, Lucide React |
+| Backend                 | Node.js, Express.js, Mongoose, Zod                          |
+| Authentication          | JWT, bcryptjs, HTTP-only cookies                            |
+| Database                | MongoDB                                                     |
+| Real-time communication | Socket.IO                                                   |
+| Testing                 | Vitest, Supertest                                           |
+| External API            | TMDB API                                                    |
+
+## 🏗️ Architecture
 
 ```mermaid
 flowchart LR
-  U[Browser / React] -->|HTTPS JSON + cookie| API[Express REST API]
-  U <-->|Socket.IO seat events| IO[Socket.IO server]
-  API --> C[Controllers]
-  C --> S[Services]
-  C --> M[Mongoose models]
-  S --> M
-  M --> DB[(MongoDB)]
-  IO --> API
+    U[Browser / React] -->|HTTP Requests| API[Express REST API]
+    U <-->|Socket.IO Events| IO[Socket.IO Server]
+    API --> C[Controllers]
+    C --> S[Services]
+    C --> M[Mongoose Models]
+    S --> M
+    M --> DB[(MongoDB)]
+    IO --> API
 ```
 
-More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/ER_DIAGRAM.md`](docs/ER_DIAGRAM.md) · [`docs/USER_FLOW.md`](docs/USER_FLOW.md) · [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md) · [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+For more details, see:
 
-## Project structure
+- [Architecture](docs/ARCHITECTURE.md)
+- [ER Diagram](docs/ER_DIAGRAM.md)
+- [User Flow](docs/USER_FLOW.md)
+- [API Documentation](docs/API_DOCUMENTATION.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+
+## 📁 Project Structure
 
 ```text
 imovies/
-├── client/                 # React + Vite frontend
-│   └── src/{components,context,pages,routes,services,utils}/
-├── server/                 # Express API and Socket.IO server
-│   ├── config/ controllers/ middleware/ models/ routes/
-│   ├── services/ sockets/ scripts/ tests/
-│   └── app.js server.js
-├── docs/                   # Architecture, diagrams, report, test and demo instructions
+├── client/                  # React + Vite frontend
+│   └── src/
+│       ├── components/
+│       ├── context/
+│       ├── pages/
+│       └── services/
+│
+├── server/                  # Express backend
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
+│   ├── services/
+│   ├── sockets/
+│   └── tests/
+│
+├── docs/                    # Project documentation
 ├── .gitignore
-└── package.json
+├── package.json
+└── README.md
 ```
 
-## Prerequisites
+## ⚙️ Getting Started
 
-- Node.js 20 or newer (Node.js 22 recommended).
-- npm.
-- MongoDB Community Server running locally, or a MongoDB Atlas database connection string.
-- Git for source control.
+### Prerequisites
 
-## Local setup (Windows PowerShell)
+Install the following before running the project:
 
-1. Open a terminal in the repository root.
-2. Install dependencies:
+- Node.js 20 or newer (Node.js 22 recommended)
+- npm
+- MongoDB Community Server or MongoDB Atlas
+- Git
+- A TMDB API Read Access Token for importing movie data
 
-   ```powershell
-   npm run install:all
-   ```
+### 1. Clone the repository
 
-3. Create the backend environment file:
+```bash
+git clone https://github.com/Aman-Saxena-09/imovies.git
+cd imovies
+```
 
-   ```powershell
-   Copy-Item server/.env.example server/.env
-   ```
+### 2. Install dependencies
 
-4. Edit `server/.env`. Set a long random `JWT_SECRET` (at least 32 characters), your MongoDB URI, the frontend origin, and a local demo-admin email/password. Never commit this file.
+```bash
+npm run install:all
+```
 
-   ```dotenv
-   PORT=5000
-   NODE_ENV=development
-   MONGODB_URI=mongodb://127.0.0.1:27017/imovies
-   JWT_SECRET=replace_with_a_long_random_secret_at_least_32_characters
-   JWT_EXPIRES_IN=1d
-   CLIENT_URL=http://localhost:5173
-   ADMIN_EMAIL=admin@example.com
-   ADMIN_PASSWORD=change_this_local_demo_password
-   ```
+### 3. Configure environment variables
 
-   The values shown are examples, not real credentials. If using Atlas, replace `MONGODB_URI` with the database connection string and ensure network access is configured.
+Create the backend environment file:
 
-5. (Optional) Create `client/.env` from `client/.env.example` if you need to change the API URL. Default local URLs work without it.
-6. Seed demo data and create/update the local admin account:
-
-   ```powershell
-   npm run seed
-   ```
-
-   This inserts/upserts sample movies, two cinemas, upcoming showtimes and 48-seat inventories. Seed data can include future showtimes for five days. Running the script again will upsert catalogue items and skip duplicate showtime slots by their movie/cinema/start time. Configure `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env` before running the seed command if you want an admin user.
-7. Start the frontend and backend together:
-
-   ```powershell
-   npm run dev
-   ```
-
-8. Open **http://localhost:5173**. The API health endpoint is **http://localhost:5000/api/health**.
-
-### Alternative: separate terminals
+**Windows PowerShell:**
 
 ```powershell
+Copy-Item server/.env.example server/.env
+```
+
+Open `server/.env` and configure your local settings:
+
+```env
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb://127.0.0.1:27017/imovies
+
+JWT_SECRET=replace_with_a_random_secret_of_at_least_32_characters
+JWT_EXPIRES_IN=1d
+
+CLIENT_URL=http://localhost:5173
+COOKIE_SAME_SITE=lax
+
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=change_this_local_demo_password
+
+TMDB_API_KEY=your_tmdb_api_key
+TMDB_ACCESS_TOKEN=your_tmdb_read_access_token
+```
+
+Use your own credentials. Never commit your actual `.env` file or expose API tokens and passwords publicly.
+
+An optional frontend environment file can be created from `client/.env.example` if you need to customize the API URL.
+
+### 4. Seed initial demo data
+
+```bash
+npm run seed
+```
+
+This creates sample movies, cinemas, showtimes, and seat inventories.
+
+Configure `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env` before running the seed command if you want to create the local administrator account.
+
+### 5. Import movies from TMDB
+
+After configuring your TMDB credentials, run:
+
+```bash
+npm --prefix server run import:tmdb
+```
+
+This imports movie information from TMDB into your MongoDB database.
+
+### 6. Generate demo showtimes
+
+To generate demo showtimes for eligible imported movies:
+
+```bash
+npm --prefix server run generate:showtimes
+```
+
+These are demonstration schedules, not real cinema schedules.
+
+### 7. Start the application
+
+```bash
+npm run dev
+```
+
+Open the application:
+
+**Frontend:** [http://localhost:5173](http://localhost:5173)
+
+**Backend health check:** [http://localhost:5000/api/health](http://localhost:5000/api/health)
+
+Alternatively, start the frontend and backend separately:
+
+```bash
 npm --prefix server run dev
+```
+
+```bash
 npm --prefix client run dev
 ```
 
-## Example local workflow
+## 🎟️ How to Use
 
-1. Register a normal user using the app.
-2. Browse a movie and open its details.
-3. Choose a cinema and showtime.
-4. Sign in if prompted, choose seats, review the total, and confirm the simulated checkout.
-5. Visit **My bookings** to view the booking reference and cancellation eligibility.
-6. Sign in with the locally configured admin account to open `/admin`, manage movies/cinemas/showtimes, or review bookings.
+1. Register a new user account or log in.
+2. Explore the movie collection.
+3. Search for a movie and open its details.
+4. Choose an available cinema and showtime.
+5. Select your preferred seats.
+6. Review the booking details and confirm the simulated checkout.
+7. Visit **My Bookings** to view your booking reference and booking history.
+8. Administrators can access the admin dashboard to manage application data.
 
-The admin login is the `ADMIN_EMAIL` and `ADMIN_PASSWORD` configured in your own `server/.env`. Do not publish real credentials in this README.
+## 🔌 API Overview
 
-## Build and test
+| Endpoint          | Description                                         |
+| ----------------- | --------------------------------------------------- |
+| `GET /api/health` | API health check                                    |
+| `/api/auth`       | Registration, login, logout, current user           |
+| `/api/movies`     | Movie listing, search, details and administration   |
+| `/api/cinemas`    | Cinema listing and administration                   |
+| `/api/showtimes`  | Showtime listing and administration                 |
+| `/api/bookings`   | Booking creation, history, details and cancellation |
+| `/api/admin`      | Admin dashboard and booking administration          |
 
-```powershell
+For request formats, authentication requirements, and response examples, see [API Documentation](docs/API_DOCUMENTATION.md).
+
+## 🧪 Build and Testing
+
+Build the application:
+
+```bash
 npm run build
+```
+
+Run tests:
+
+```bash
 npm test
 ```
 
-The API test suite includes health/404 smoke tests and booking-input validation tests without a database. Additional API and concurrency integration tests are available when `MONGODB_TEST_URI` points to an isolated test database; run them only against test data. See [`docs/TESTING.md`](docs/TESTING.md).
+The project includes API health checks, booking validation tests, and additional database-backed integration and concurrency tests.
 
-## API overview
+For test setup and details, see [Testing Documentation](docs/TESTING.md).
 
-- `GET /api/health`
-- `/api/auth` — register, login, logout, current user
-- `/api/movies` — listing, search, details; write operations are admin-only
-- `/api/cinemas` — list; write operations are admin-only
-- `/api/showtimes` — list, detail; write operations are admin-only
-- `/api/bookings` — authenticated booking creation, history, detail, cancellation
-- `/api/admin` — admin dashboard and booking administration
+## 🔐 Security and Limitations
 
-See [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md) for request bodies, access controls, and response shapes.
+- Passwords are hashed using bcrypt.
+- Authentication uses JWT tokens stored in HTTP-only cookies.
+- Role-based middleware protects administrator routes.
+- The backend validates seat availability and calculates booking totals.
+- Seat reservation uses conditional MongoDB updates to prevent conflicting seat claims.
+- Socket.IO provides real-time seat-state notifications.
+- Checkout is simulated; no real payment provider is connected.
+- Production payment integration would require secure payment verification, webhook handling, and appropriate transaction/recovery mechanisms.
+- Demo movie schedules should not be treated as actual cinema availability.
+- Production deployment requires secure environment variables, HTTPS, appropriate cookie settings, and a configured CORS allowlist.
 
-## Security and known limitations
+## 📸 Screenshots and Demo
 
-- Passwords are hashed with bcrypt. Authentication uses a JWT inside an HTTP-only cookie and is protected by server-side authorization checks.
-- The server computes totals and validates seat availability; it does not trust the browser's selected prices.
-- Seat claims use a single atomic conditional update to one showtime document. If the booking record creation throws, the code attempts a compensating seat release. For a production payment workflow, use replica-set transactions plus an idempotent payment/outbox design and recovery jobs.
-- Checkout is simulated and refunds are just status labels; no payment provider is connected.
-- The frontend does not include automated browser E2E coverage. Verify the booking workflow manually against a configured MongoDB before presenting it.
-- Public sample poster links depend on their image hosts. An in-app fallback keeps failed images from breaking layout.
-- Deployment requires separate frontend/backend origins, secure cookie settings, a production MongoDB URI, and an explicitly configured CORS origin.
+Screenshots and a demo video can be added here as the project develops.
 
-## Screenshots and demo
+- **Live Application:** Coming soon
+- **Demo Video:** Coming soon
+- **GitHub Repository:** [https://github.com/Aman-Saxena-09/imovies](https://github.com/Aman-Saxena-09/imovies)
 
-Screenshots should be genuine captures of the running application. The folder [`docs/screenshots/`](docs/screenshots/) contains instructions/placeholders until screenshots can be captured using a browser. The recording plan is in [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+## 👨‍💻 Author
 
-- Live application: _add your deployed URL here after deployment_
-- Demo video: _add your recorded video URL here_
-- GitHub repository: _add your repository URL here_
+**Aman Saxena**
 
-## GitHub upload
+- GitHub: [@Aman-Saxena-09](https://github.com/Aman-Saxena-09)
 
-Review `.gitignore`, ensure there are no `.env` files or credentials staged, then run these commands from the project root after creating an empty GitHub repository:
+## 🚀 Future Improvements
 
-```bash
-git init
-git add .
-git status --short
-git commit -m "Initial commit: IMovies movie ticket booking application"
-git branch -M main
-git remote add origin YOUR_GITHUB_REPOSITORY_URL
-git push -u origin main
-```
+- Integrate a real payment gateway with server-side payment verification.
+- Add QR-code-based tickets.
+- Add email notifications for booking confirmation and cancellation.
+- Implement expiring seat reservation holds.
+- Add automated browser-based end-to-end tests.
+- Improve accessibility and localization.
+- Deploy the application with a production database and secure infrastructure.
 
-Replace `YOUR_GITHUB_REPOSITORY_URL` with the actual URL of your repository. Do not commit `node_modules`, `.env`, logs, or private database credentials.
+---
 
-## Author
-
-- Name: _add your preferred author name_
-- GitHub: _add your GitHub profile URL_
-- LinkedIn: _add your LinkedIn profile URL_
-
-## Future improvements
-
-- Add optional real payment integration behind server-side webhook verification.
-- Add formal distributed reservation holds with expiration and recovery.
-- Add QR-code tickets and email notifications.
-- Add browser-based end-to-end tests and CI.
-- Add accessibility audit and localisation.
+*Movie information and images are provided through TMDB. This project is not endorsed or certified by TMDB.*
